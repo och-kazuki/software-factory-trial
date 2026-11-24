@@ -17,7 +17,7 @@ jobs:
       # タグを書き換えられても中身が変わらないよう、アクションはコミットの SHA で固定する
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # 全コミットの作者情報と内容を検査するため、浅いクローンにしない
+          # 全コミットの作者情報と内容、および spec-approved タグを検査に使うため、浅いクローンにしない
           fetch-depth: 0
           persist-credentials: false
 
@@ -31,17 +31,51 @@ jobs:
       - run: npm run lint
       - run: npm test
 
+      # PR 側のコードは検査される側なので、検査スクリプトはマージ先（base）の版を使う。
+      # そうしないと、検査スクリプト自体を書き換えた PR が自分を合格にできてしまう
+      - name: prepare trusted checkers
+        id: checkers
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            git worktree add --detach "$RUNNER_TEMP/base" "$BASE_SHA"
+            echo "dir=$RUNNER_TEMP/base/factory/checks" >>"$GITHUB_OUTPUT"
+          else
+            echo "dir=$GITHUB_WORKSPACE/factory/checks" >>"$GITHUB_OUTPUT"
+          fi
+
       # 禁止語リストは公開の場に置けないため、CI では使わない（禁止語はローカルのフックで検査する）
       - name: secret scan (tree)
-        run: node factory/checks/secret-scan.ts --tree --no-denylist
+        env:
+          CHECKERS: ${{ steps.checkers.outputs.dir }}
+        run: node "$CHECKERS/secret-scan.ts" --tree --no-denylist
 
       - name: secret scan (pull request commits)
         if: github.event_name == 'pull_request'
         env:
+          CHECKERS: ${{ steps.checkers.outputs.dir }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: node factory/checks/secret-scan.ts --range "$BASE_SHA..$HEAD_SHA" --no-denylist
+        run: node "$CHECKERS/secret-scan.ts" --range "$BASE_SHA..$HEAD_SHA" --no-denylist
 
       - name: secret scan (history)
         if: github.event_name == 'push'
-        run: node factory/checks/secret-scan.ts --history --no-denylist
+        env:
+          CHECKERS: ${{ steps.checkers.outputs.dir }}
+        run: node "$CHECKERS/secret-scan.ts" --history --no-denylist
+
+      # ブランチ名は PR の作成者が自由に付けられるため、式で直接埋め込まず環境変数で渡す
+      - name: factory scope check
+        if: github.event_name == 'pull_request'
+        env:
+          CHECKERS: ${{ steps.checkers.outputs.dir }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          if [ ! -f "$CHECKERS/diff-scope.ts" ]; then
+            echo "diff-scope: not present on the base branch; skipped"
+            exit 0
+          fi
+          node "$CHECKERS/diff-scope.ts" --base "$BASE_SHA" --head "$HEAD_SHA" --branch "$HEAD_REF"

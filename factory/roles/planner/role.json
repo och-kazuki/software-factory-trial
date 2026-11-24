@@ -1,0 +1,8 @@
+{
+  "tools": ["Read", "Grep", "Glob"],
+  "restricted": true,
+  "permissions": {
+    "allow": ["Read", "Grep", "Glob"],
+    "deny": ["Read(./.env*)", "Read(~/.config/**)", "Read(~/.ssh/**)", "Read(~/.claude/**)"]
+  }
+}

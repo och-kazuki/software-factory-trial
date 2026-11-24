@@ -16,5 +16,8 @@
     "rules": {
       "preset": "recommended"
     }
+  },
+  "files": {
+    "includes": ["**", "!**/*.md"]
   }
 }

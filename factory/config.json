@@ -1,0 +1,18 @@
+{
+  "models": {
+    "planner": "claude-opus-5-5",
+    "testWriter": "claude-opus-5-5",
+    "builder": "claude-opus-5-5",
+    "reviewer": "claude-opus-5-5"
+  },
+  "usageCapsUsdEquivalent": {
+    "planner": 1.5,
+    "testWriter": 1.5,
+    "builder": 3,
+    "reviewer": 1.5,
+    "perTicket": 12,
+    "perDay": 30
+  },
+  "maxBuildAttempts": 3,
+  "maxTestWriterAttempts": 2
+}
