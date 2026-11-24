@@ -1,0 +1,18 @@
+{
+  "tools": ["Read", "Grep", "Glob", "Write", "Edit", "Bash"],
+  "restricted": false,
+  "permissions": {
+    "allow": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Write(./product/tests/acceptance/**)",
+      "Edit(./product/tests/acceptance/**)",
+      "Bash(npm run typecheck)",
+      "Bash(npm run lint)",
+      "Bash(node --test product/tests/*)",
+      "Bash(npx biome check --write product/tests/acceptance/*)"
+    ],
+    "deny": ["Read(./.env*)", "Read(~/.config/**)", "Read(~/.ssh/**)", "Read(~/.claude/**)"]
+  }
+}

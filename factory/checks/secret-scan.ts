@@ -1,17 +1,14 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
-import { homedir } from "node:os";
-import { join } from "node:path";
+import { loadDenylist } from "./denylist.ts";
 import {
   CONTENT_RULES,
   checkPath,
-  denylistRule,
   type Finding,
   formatFinding,
   isAllowedIdentity,
   linesOf,
   parseAddedLines,
-  parseDenylist,
   type Rule,
   scanLines,
 } from "./secret-scan-lib.ts";
@@ -39,29 +36,18 @@ function splitNul(output: string): string[] {
   return output.split("\0").filter((s) => s !== "");
 }
 
-function denylistPath(): string {
-  const configHome = process.env.XDG_CONFIG_HOME ?? join(homedir(), ".config");
-  return process.env.FACTORY_DENYLIST ?? join(configHome, "software-factory", "denylist.txt");
-}
-
 function buildRules(useDenylist: boolean): Rule[] {
   const rules = [...CONTENT_RULES];
   if (!useDenylist) return rules;
-  const path = denylistPath();
-  if (!existsSync(path)) {
+  const denylist = loadDenylist();
+  if (denylist.status !== "loaded") {
+    const reason = denylist.status === "missing" ? "no denylist at" : "no terms in denylist at";
     console.error(
-      `secret-scan: warning: no denylist at ${path}; organization-specific terms are not checked`,
+      `secret-scan: warning: ${reason} ${denylist.path}; organization-specific terms are not checked`,
     );
     return rules;
   }
-  const rule = denylistRule(parseDenylist(readFileSync(path, "utf8")));
-  if (rule === null) {
-    console.error(
-      `secret-scan: warning: denylist at ${path} has no terms; organization-specific terms are not checked`,
-    );
-    return rules;
-  }
-  rules.push(rule);
+  rules.push(denylist.rule);
   return rules;
 }
 

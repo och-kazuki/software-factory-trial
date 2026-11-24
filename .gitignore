@@ -21,3 +21,6 @@ id_ecdsa*
 
 # 工場が工程ごとに作る作業ツリー
 .worktrees/
+
+# 書きかけのチケット。ラインが仕様と一緒に tickets/<ID>.md としてコミットするので、下書きは追跡しない
+tickets/inbox/

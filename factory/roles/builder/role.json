@@ -1,0 +1,21 @@
+{
+  "tools": ["Read", "Grep", "Glob", "Write", "Edit", "Bash"],
+  "restricted": false,
+  "permissions": {
+    "allow": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Write(./product/src/**)",
+      "Edit(./product/src/**)",
+      "Bash(npm test)",
+      "Bash(npm run typecheck)",
+      "Bash(npm run lint)",
+      "Bash(node --test product/tests/*)",
+      "Bash(npx biome check --write product/src*)",
+      "Bash(git status*)",
+      "Bash(git diff*)"
+    ],
+    "deny": ["Read(./.env*)", "Read(~/.config/**)", "Read(~/.ssh/**)", "Read(~/.claude/**)"]
+  }
+}

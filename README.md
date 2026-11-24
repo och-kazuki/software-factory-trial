@@ -6,13 +6,23 @@ AI エージェント（Claude Code）を作業者として使う「ソフトウ
 
 ## 状態
 
-**Phase 0（土台作り）**：工場のラインはまだありません。今あるものは次のとおりです。
+**Phase 1（ライン v1）**：手動で起動するラインが1本あります。
 
-- 題材プロダクトの雛形
-- 検証用の基盤（型チェック、lint、テスト）
-- 秘密情報スキャン
+- planner → 人の承認 → test-writer → red の確認 → builder → ローカルの事前チェック → PR 作成 → reviewer → 人のマージ
+- CI は、工場の PR が各工程で触ってよいファイルだけを変更しているかを検査します
 
 各 Phase で何を作るかは、[設計書](docs/factory-design.md)を参照してください。
+
+## 工場の使い方
+
+```bash
+factory/bin/factory plan T-001      # tickets/inbox/T-001.md から仕様の案を作る
+factory/bin/factory approve T-001   # 仕様を承認し、PR 作成まで進める
+factory/bin/factory status          # 利用量と、未マージの PR を表示する
+factory/bin/factory cleanup T-001   # マージ後に作業ツリーを片付ける
+```
+
+チケットの書き方は [tickets/README.md](tickets/README.md) を参照してください。工場を動かすには、WSL などの Linux 環境と、ログイン済みの Claude Code と gh が必要です。
 
 ## 構成
 
