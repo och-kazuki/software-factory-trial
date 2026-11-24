@@ -1,0 +1,25 @@
+{
+  "name": "software-factory-trial",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A from-scratch software factory that uses Claude Code agents as workers",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "check": "npm run typecheck && npm run lint && npm test && npm run secret-scan",
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "test": "node --test \"product/tests/**/*.test.ts\" \"factory/**/*.test.ts\"",
+    "secret-scan": "node factory/checks/secret-scan.ts --tree",
+    "setup": "git config core.hooksPath .githooks"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.6.8",
+    "@types/node": "24.19.2",
+    "typescript": "7.0.2"
+  }
+}

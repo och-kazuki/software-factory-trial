@@ -1,0 +1,23 @@
+node_modules/
+dist/
+coverage/
+
+# 実行ログには絶対パスやプロンプト全文が含まれるため、公開リポジトリには載せない
+runs/
+
+# 秘密情報が入りうるファイルは、誤ってステージしないよう最初から除外しておく
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+id_ecdsa*
+
+.claude/settings.local.json
+
+# 工場が工程ごとに作る作業ツリー
+.worktrees/

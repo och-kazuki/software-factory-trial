@@ -1,0 +1,2 @@
+# Windows 側のエディタから編集しても、リポジトリの中は LF に揃える
+* text=auto eol=lf

@@ -1,0 +1,3 @@
+#!/bin/sh
+# --no-verify で迂回できる最初の関門にすぎないため、push 前と CI でも同じ検査を重ねている
+exec node factory/checks/secret-scan.ts --staged

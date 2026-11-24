@@ -1,0 +1,3 @@
+#!/bin/sh
+# コミットの作者情報とメッセージはコミット前の検査では見られないため、公開される直前のこの時点で確かめる
+exec node factory/checks/secret-scan.ts --pre-push

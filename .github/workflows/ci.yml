@@ -1,0 +1,47 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# 公開リポジトリなので、ワークフローに渡すトークンは読み取りだけに絞る
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      # タグを書き換えられても中身が変わらないよう、アクションはコミットの SHA で固定する
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # 全コミットの作者情報と内容を検査するため、浅いクローンにしない
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+
+      # 禁止語リストは公開の場に置けないため、CI では使わない（禁止語はローカルのフックで検査する）
+      - name: secret scan (tree)
+        run: node factory/checks/secret-scan.ts --tree --no-denylist
+
+      - name: secret scan (pull request commits)
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node factory/checks/secret-scan.ts --range "$BASE_SHA..$HEAD_SHA" --no-denylist
+
+      - name: secret scan (history)
+        if: github.event_name == 'push'
+        run: node factory/checks/secret-scan.ts --history --no-denylist
